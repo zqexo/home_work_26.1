@@ -3,6 +3,7 @@ from rest_framework import permissions
 
 class IsModer(permissions.BasePermission):
     """Проверка на модератора"""
+
     message = "Adding customers not allowed"
 
 

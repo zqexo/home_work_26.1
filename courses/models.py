@@ -23,7 +23,11 @@ class Course(models.Model):
         help_text="Введите описание",
     )
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Создатель",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Создатель",
     )
 
     def __str__(self):
@@ -62,7 +66,11 @@ class Lesson(models.Model):
         help_text="Выберите фото",
     )
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Создатель",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Создатель",
     )
 
     def __str__(self):
