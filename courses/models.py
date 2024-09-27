@@ -1,5 +1,7 @@
 from django.db import models
 
+from djangoProject9 import settings
+
 
 class Course(models.Model):
     title = models.CharField(
@@ -20,6 +22,7 @@ class Course(models.Model):
         verbose_name="Описание",
         help_text="Введите описание",
     )
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.title}"
