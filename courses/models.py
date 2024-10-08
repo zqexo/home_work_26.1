@@ -1,5 +1,6 @@
 from django.db import models
 
+import users
 from djangoProject9 import settings
 
 
@@ -79,3 +80,23 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="Подписка"
+    )
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="Подписка"
+    )
+
+    class Meta:
+        unique_together = (
+            "user",
+            "course",
+        )  # Обеспечим уникальность подписки для пользователя и курса
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"{self.user.email} subscribed to {self.course.title}"

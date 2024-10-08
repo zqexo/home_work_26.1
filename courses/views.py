@@ -1,13 +1,26 @@
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import (CreateAPIView, DestroyAPIView,
-                                     ListAPIView, RetrieveAPIView,
-                                     UpdateAPIView)
+from rest_framework import status
+from rest_framework.generics import (
+    CreateAPIView,
+    DestroyAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from courses.models import Course, Lesson
-from courses.serializers import (CourseDetailSerializer, CourseSerializer,
-                                 LessonSerializer)
+from courses.models import Course, Lesson, Subscription
+from courses.paginations import CustomPagination
+from courses.serializers import (
+    CourseDetailSerializer,
+    CourseSerializer,
+    LessonSerializer,
+)
+from courses.validators import validate_video_link
 from users.permissions import IsModer, IsOwner
 
 
@@ -17,6 +30,7 @@ class CourseViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     ordering_fields = ["payment_date"]
     ordering = ["payment_date"]
+    pagination_class = CustomPagination
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -54,10 +68,15 @@ class LessonCreateApiView(CreateAPIView):
         lesson.owner = self.request.user
         lesson.save()
 
+    def clean(self):
+        for url in self.materials:
+            validate_video_link(url)
+
 
 class LessonListApiView(ListAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -71,14 +90,52 @@ class LessonRetrieveApiView(RetrieveAPIView):
     serializer_class = LessonSerializer
     permission_classes = (IsAuthenticated, IsOwner | IsModer)
 
+    def clean(self):
+        # Применяем валидацию для материалов
+        for url in self.materials:
+            validate_video_link(url)
+
 
 class LessonUpdateApiView(UpdateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = (IsAuthenticated, IsOwner | IsModer)
 
+    def clean(self):
+        # Применяем валидацию для материалов
+        for url in self.materials:
+            validate_video_link(url)
+
 
 class LessonDestroyApiView(DestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = (IsAuthenticated, IsOwner | ~IsModer)
+
+
+class SubscriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get(
+            "course_id"
+        )  # Предполагаем, что идентификатор курса передается в запросе
+        course_item = get_object_or_404(Course, id=course_id)
+
+        # Получаем объекты подписок по текущему пользователю и курсу
+        subs_item = Subscription.objects.filter(user=user, course=course_item)
+
+        # Если подписка у пользователя на этот курс есть - удаляем ее
+        if subs_item.exists():
+            subs_item.delete()
+            message = "Подписка удалена"
+
+        # Если подписки у пользователя на этот курс нет - создаем ее
+        else:
+            Subscription.objects.create(user=user, course=course_item)
+            message = "Подписка добавлена"
+
+        # Возвращаем ответ в API
+        return Response({"message": message}, status=status.HTTP_200_OK)
