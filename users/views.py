@@ -4,8 +4,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
 
 from users.filters import PaymentFilter
-from users.models import Payment, User
-from users.serializers import PaymentSerializer, UserSerializer
+from users.models import Payment, User, Donation
+from users.serializers import PaymentSerializer, UserSerializer, DonationSerializer
 
 
 class PaymentViewSet(ModelViewSet):
@@ -26,3 +26,14 @@ class UserCreateAPIView(CreateAPIView):
         user = serializer.save(is_active=True)
         user.set_password(user.password)
         user.save()
+
+
+class DonationCreateAPIView(CreateAPIView):
+    queryset = Donation.objects.all()
+    serializer_class = DonationSerializer
+
+    def perform_create(self, serializer):
+        # user = serializer.save(is_active=True)
+        # user.set_password(user.password)
+        # user.save()
+        pass
