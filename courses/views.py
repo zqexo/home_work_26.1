@@ -1,13 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.generics import (
-    CreateAPIView,
-    DestroyAPIView,
-    ListAPIView,
-    RetrieveAPIView,
-    UpdateAPIView,
-)
+from rest_framework.generics import (CreateAPIView, DestroyAPIView,
+                                     ListAPIView, RetrieveAPIView,
+                                     UpdateAPIView)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,11 +11,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from courses.models import Course, Lesson, Subscription
 from courses.paginations import CustomPagination
-from courses.serializers import (
-    CourseDetailSerializer,
-    CourseSerializer,
-    LessonSerializer,
-)
+from courses.serializers import (CourseDetailSerializer, CourseSerializer,
+                                 LessonSerializer)
 from courses.validators import validate_video_link
 from users.permissions import IsModer, IsOwner
 

@@ -43,4 +43,3 @@ class CourseTestCase(APITestCase):
         url = reverse("courses:course-detail", kwargs={"pk": self.course.pk})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
