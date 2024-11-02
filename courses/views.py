@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.generics import (CreateAPIView, DestroyAPIView,
                                      ListAPIView, RetrieveAPIView,
                                      UpdateAPIView)
@@ -13,6 +14,7 @@ from courses.models import Course, Lesson, Subscription
 from courses.paginations import CustomPagination
 from courses.serializers import (CourseDetailSerializer, CourseSerializer,
                                  LessonSerializer)
+from courses.tasks import send_info_about_like
 from courses.validators import validate_video_link
 from users.permissions import IsModer, IsOwner
 
@@ -49,6 +51,17 @@ class CourseViewSet(ModelViewSet):
         if user.groups.filter(name="moders").exists():
             return Course.objects.all()
         return Course.objects.filter(owner=user)
+
+    @action(detail=True, methods=("post",))
+    def likes(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
+        if course.likes.filter(pk=request.user.pk).exists():
+            course.likes.remove(request.user)
+        else:
+            course.likes.add(request.user)
+            send_info_about_like.delay(course.owner.email)
+        serializer = self.get_serializer(course)
+        return Response(data=serializer.data)
 
 
 class LessonCreateApiView(CreateAPIView):

@@ -31,6 +31,14 @@ class Course(models.Model):
         verbose_name="Создатель",
     )
 
+    likes = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        verbose_name="Лайки",
+        related_name="user_likes",
+    )
+
     def __str__(self):
         return f"{self.title}"
 
