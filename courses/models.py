@@ -92,10 +92,10 @@ class Lesson(models.Model):
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="Подписка"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="subscriptions"
     )
     course = models.ForeignKey(
-        Course, on_delete=models.CASCADE, related_name="Подписка"
+        Course, on_delete=models.CASCADE, related_name="subscriptions"
     )
 
     class Meta:

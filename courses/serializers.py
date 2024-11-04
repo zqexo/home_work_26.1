@@ -25,6 +25,7 @@ class CourseSerializer(ModelSerializer):
     title = serializers.CharField(validators=[validate_forbidden_words])
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
+
     def get_is_subscribed(self, obj):
         request = self.context.get("request")
         if request and request.user.is_authenticated:

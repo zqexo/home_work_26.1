@@ -142,6 +142,14 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")  # Например, Redis, �
 # URL-адрес брокера результатов, также Redis
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+CELERY_BEAT_SCHEDULE = {
+    "block_if_not_active": {
+        "task": "courses.tasks.block_if_not_active",
+        "schedule": timedelta(days=1),
+    }
+}
 # Часовой пояс для работы Celery
 CELERY_TIMEZONE = TIME_ZONE
 

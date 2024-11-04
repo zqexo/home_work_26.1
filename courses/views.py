@@ -14,7 +14,7 @@ from courses.models import Course, Lesson, Subscription
 from courses.paginations import CustomPagination
 from courses.serializers import (CourseDetailSerializer, CourseSerializer,
                                  LessonSerializer)
-from courses.tasks import send_info_about_like
+from courses.tasks import send_info_about_like, send_email_about_course_update
 from courses.validators import validate_video_link
 from users.permissions import IsModer, IsOwner
 
@@ -61,6 +61,16 @@ class CourseViewSet(ModelViewSet):
             course.likes.add(request.user)
             send_info_about_like.delay(course.owner.email)
         serializer = self.get_serializer(course)
+        return Response(data=serializer.data)
+
+    def update(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
+        serializer = self.get_serializer(course, data=request.data, partial=True)
+        if serializer.is_valid():
+            subscribers = Subscription.objects.filter(course=course).select_related('user')
+            emails = [subscription.user.email for subscription in subscribers]
+            if emails:
+                send_email_about_course_update.delay(emails)
         return Response(data=serializer.data)
 
 
